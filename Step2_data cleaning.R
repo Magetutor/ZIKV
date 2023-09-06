@@ -4,7 +4,7 @@ rm(list = ls())
 #如果数据重新加载，进行Rda的load即可
 load(file = 'zika_all_group.Rda')
 
-#### 1、数据的质控 1：去除线粒体基因和极端值#####
+#### 1、数据的质控 1：去除线粒体基因和极端值##
 ##寻找线粒体基因
 library(tidyverse)
 library(Seurat)
