@@ -1,6 +1,6 @@
 setwd('~/analysis/zika/')
-# 根据注释好的细胞进行一些可视化
-# 加载包
+# Do some visualization based on the annotated cells 
+# Load the package
 library(tidyverse)
 library(reshape2)
 library(patchwork)
@@ -16,10 +16,10 @@ library(ggsci)
 library(plyr)
 library(dplyr)
 
-#  先把数据load进来，load注释好的数据
+#  load the data first,load the annotated data
 # load('zika_all_mthb_filter_SCT_cluster_PC20_23cluster_immune_marker.Rda')
 
-######桑基图 不能画，没有细胞名称同时存在######
+
 head(zika_all_mthb_filter_SCT@meta.data)
 plot.data <- zika_all_mthb_filter_SCT@meta.data[,c("Group", "cell_type")]
 head(plot.data)
@@ -63,7 +63,7 @@ ggplot(corLodes,
   guides(fill = "none") 
 ggsave("cell_type.pdf")
 
-###### 细胞比例图#########
+###### percentage#########
 plot.data <- zika_all_mthb_filter_SCT@meta.data[c("Group", "cell_type")]
 head(plot.data)
 plot.data2 <- plot.data %>%
@@ -92,7 +92,7 @@ ggplot(plot.data2, aes(x = Group,
   xlab("Treat")
 
 
-# 计算百分比
+
 plot.data3 <- plot.data2 %>%
   ddply("Group", transform, percent = num/sum(num) * 100) %>%
   arrange(Group)
@@ -118,7 +118,7 @@ ggplot(plot.data3, aes(x = Group,
   theme(panel.border = element_blank())
 
 
-# 巨噬细胞marker 
+
 
 load('data/step6_7_Macroxifen/M.data_cluster_PC30_4cluster_marker.Rda')
 VlnPlot(M.data,
@@ -127,7 +127,7 @@ VlnPlot(M.data,
         ),
         group.by = "seurat_clusters",pt.size = 0)+NoLegend()
 
-# 神经细胞marker
+
 VlnPlot(M.data,
         features = c('Rbfox3', 'Map2','Meg3',
                      'Gap43', 'Miat','Ccnd2'
