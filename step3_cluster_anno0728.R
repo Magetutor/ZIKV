@@ -1,4 +1,3 @@
-#####降维、聚类####
 setwd('~/analysis/zika_new/')
 # rm(list = ls())
 library(Seurat)
@@ -9,27 +8,27 @@ library(viridis)
 load("zika_all_mthb_filter_SCT_scalemtcycle.Rda")
 dim(zika_all_mthb_filter_SCT)
 
-############PCA分析###################
-#进行PCA分析
+############ PCA Analysis ###################
+# Perform PCA analysis
 zika_all_mthb_filter_SCT <- RunPCA(object = zika_all_mthb_filter_SCT,
                    npcs = 50,
                    rev.pca = FALSE,
                    weight.by.var = TRUE,
-                   verbose = TRUE, # 输出特定PC值的特征基因
-                   ndims.print = 1:5, # 输出前5个PC值的特征基因
-                   nfeatures.print = 30, # 输出每个PC值的30个特征基因
+                   verbose = TRUE, # Output feature genes for specific PC values
+                   ndims.print = 1:5, # Output feature genes for the first 5 PC values
+                   nfeatures.print = 30, # Output 30 feature genes for each PC value
                    reduction.key = "PC_")
-#这儿可以画个热图https://www.jianshu.com/p/21c1934e3061
-View(zika_all_mthb_filter_SCT@reductions[["pca"]]@feature.loadings)#调去改变基因对应PC值
-View(zika_all_mthb_filter_SCT@reductions[["pca"]]@cell.embeddings)#每个细胞在低维PCA轴上的映射坐标
-DimHeatmap(object = zika_all_mthb_filter_SCT,dims = 1,cells = 1000,
-           balanced = T, fast = F,nfeatures = 30)+ scale_fill_viridis()
+# You can plot a heatmap here: https://www.jianshu.com/p/21c1934e3061
+View(zika_all_mthb_filter_SCT@reductions[["pca"]]@feature.loadings) # Modify gene-PC value mapping
+View(zika_all_mthb_filter_SCT@reductions[["pca"]]@cell.embeddings) # Mapping coordinates of each cell on low-dimensional PCA axes
+DimHeatmap(object = zika_all_mthb_filter_SCT, dims = 1, cells = 1000,
+           balanced = TRUE, fast = FALSE, nfeatures = 30) + scale_fill_viridis()
 
-#选择适合的PCA
+# Select appropriate PCs
 ElbowPlot(zika_all_mthb_filter_SCT,
-          ndims = 50) # 寻找对细胞差异贡献度较大的主成分
+          ndims = 50) # Find principal components contributing significantly to cell differences
 
-# 每个主成分的标志物热图展示
+# Heatmap display of markers for each principal component
 DimHeatmap(object = zika_all_mthb_filter_SCT,
            reduction = "pca",
            dims = c(1:5),
@@ -41,21 +40,22 @@ DimHeatmap(object = zika_all_mthb_filter_SCT,
            raster = TRUE,
            slot = "scale.data",
            combine = TRUE)
-#PCA可视化
-#PCA可视化1: 一维可视化，对每个维度中，权重较大的基因进行可视化
-#pdf(file="06.pcaGene.pdf",width=10,height=8)
+
+# PCA visualization
+# PCA visualization 1: One-dimensional visualization, visualize genes with higher weights in each dimension
+# pdf(file="06.pcaGene.pdf", width=10, height=8)
 VizDimLoadings(object = zika_all_mthb_filter_SCT, dims = 1:4, 
-               reduction = "pca",nfeatures = 20)
-#dev.off()
+               reduction = "pca", nfeatures = 20)
+# dev.off()
 
-#PCA可视化2: 二维可视化
-#pdf(file="06.PCA.pdf",width=6.5,height=6)
+# PCA visualization 2: Two-dimensional visualization
+# pdf(file="06.PCA.pdf", width=6.5, height=6)
 DimPlot(object = zika_all_mthb_filter_SCT, reduction = "pca")
-#dev.off()
+# dev.off()
 
 
-#########从降维的图⽚观察有无批次效应#########
-#
+######### Identify Batch Effects from Dimensionality Reduction Plots #########
+
 p1 <- DimPlot(object = zika_all_mthb_filter_SCT,
               reduction = "pca",
               group.by = "Group",
@@ -67,7 +67,7 @@ p1 <- DimPlot(object = zika_all_mthb_filter_SCT,
               label.box = TRUE,
               sizes.highlight = 1)
 p1
-###看细胞周期是否影响
+### Check if cell cycle affects the analysis
 p2 <- DimPlot(object = zika_all_mthb_filter_SCT,
               reduction = "pca",
               group.by = "Phase",
@@ -80,10 +80,10 @@ p2 <- DimPlot(object = zika_all_mthb_filter_SCT,
               sizes.highlight = 1)
 p2
 
-############tSNE分析################
+############ tSNE Analysis ################
 zika_all_mthb_filter_SCT <- RunTSNE(zika_all_mthb_filter_SCT,
-                    dims = 1:20)# 根据上⾯的贡献度图选择了20个PC值进⾏tSNE分析，所以我们直接运⾏ RunTSNE 函数
-#按照group画tSNE图
+                    dims = 1:20) # Perform tSNE analysis with the selected 20 PC values from the contribution plot
+# Plot tSNE based on group
 p3 <- DimPlot(object = zika_all_mthb_filter_SCT,
               reduction = "tsne",
               group.by = "Group",
@@ -95,133 +95,142 @@ p3 <- DimPlot(object = zika_all_mthb_filter_SCT,
               label.box = TRUE,
               sizes.highlight = 1)
 p3
-
-#再按照细胞周期分组画tSNE图
+#Plot tSNE graph grouped by cell cycle phase
 p4 <- DimPlot(object = zika_all_mthb_filter_SCT,
-              reduction = "tsne",
-              group.by = "Phase",
-              dims = c(1,2),
-              shuffle = TRUE,
-              label = TRUE,
-              label.size = 4,
-              label.color = "black",
-              label.box = TRUE,
-              sizes.highlight = 1)
+reduction = "tsne",
+group.by = "Phase",
+dims = c(1,2),
+shuffle = TRUE,
+label = TRUE,
+label.size = 4,
+label.color = "black",
+label.box = TRUE,
+sizes.highlight = 1)
 p4
 
-##############UMAP分析##############
+############## UMAP Analysis ##############
 zika_all_mthb_filter_SCT <- RunUMAP(zika_all_mthb_filter_SCT,
-                    dims = 1:20)
-#按照group进行区分
+dims = 1:20)
+
+#Grouping by 'Group'
 p5 <- DimPlot(object = zika_all_mthb_filter_SCT,
-              reduction = "umap",
-              group.by = "Group",
-              dims = c(1,2),
-              shuffle = TRUE,
-              label = TRUE,
-              label.size = 4,
-              label.color = "black",
-              label.box = TRUE,
-              sizes.highlight = 1)
+reduction = "umap",
+group.by = "Group",
+dims = c(1,2),
+shuffle = TRUE,
+label = TRUE,
+label.size = 4,
+label.color = "black",
+label.box = TRUE,
+sizes.highlight = 1)
 p5
 
-#按照细胞周期区分
+#Grouping by cell cycle phase
 p6 <- DimPlot(object = zika_all_mthb_filter_SCT,
-              reduction = "umap",
-              group.by = "Phase",
-              dims = c(1,2),
-              shuffle = TRUE,
-              label = TRUE,
-              label.size = 4,
-              label.color = "black",
-              label.box = TRUE,
-              sizes.highlight = 1)
+reduction = "umap",
+group.by = "Phase",
+dims = c(1,2),
+shuffle = TRUE,
+label = TRUE,
+label.size = 4,
+label.color = "black",
+label.box = TRUE,
+sizes.highlight = 1)
 p6
 
-#拼一下这几种方法的图
+#Combining the plots for different methods
 library(cowplot)
 library(patchwork)
-#拼一下按照group的
+
+#Grouping by 'Group'
 plot_grid(p1, p3, p5,
-          labels = c("A", "B", "C"),
-          nrow = 1,
-          align = "h")
+labels = c("A", "B", "C"),
+nrow = 1,
+align = "h")
 plot_grid(p2, p4, p6,
-          labels = c("A", "B", "C"),
-          nrow = 1,
-          align = "h")
-#拼一下按照细胞周期的
+labels = c("A", "B", "C"),
+nrow = 1,
+align = "h")
+
+#Grouping by cell cycle phase
 p2 + p4 + p6 +
-  plot_layout(guides = "collect") &
-  theme(legend.position = "bottom")
+plot_layout(guides = "collect") &
+theme(legend.position = "bottom")
 
-#UMAP图展示特定基因
+#Displaying specific genes in UMAP plot
 FeaturePlot(zika_all_mthb_filter_SCT,
-            reduction = "tsne",
-            features = "Mki67") #G2M期标志物
+reduction = "tsne",
+features = "Mki67") # G2M phase marker
 FeaturePlot(zika_all_mthb_filter_SCT,
-            reduction = "tsne",
-            features = "Top2a") #S期标志物 无
+reduction = "tsne",
+features = "Top2a") # S phase marker (none)
 
-#######2.单细胞数据的聚类分析######
-#K- Nearest Neighbor法进行聚类
+####### 2. Single Cell Clustering Analysis ######
+
+#Perform clustering using K-Nearest Neighbor algorithm
 zika_all_mthb_filter_SCT <- FindNeighbors(zika_all_mthb_filter_SCT,
-                          k.param = 20,
-                          dims = 1:20)
+k.param = 20,
+dims = 1:20)
 zika_all_mthb_filter_SCT <- FindClusters(zika_all_mthb_filter_SCT,
-                         resolution = 0.5, # 最重要参数，该值越大，cluster 越多
-                         method = "igraph", # 根据结果调整
-                         algorithm = 1, # 根据结果调整'
-                         random.seed = 2022) 
-#统计一下各个cluster
+resolution = 0.5, # The higher the value, the more clusters formed (most important parameter)
+method = "igraph", # Adjust based on results
+algorithm = 1, # Adjust based on results'
+random.seed = 2022)
+
+##Count the cells in each cluster
 table(zika_all_mthb_filter_SCT@meta.data$seurat_clusters)
 
-#对细胞类型进行可视化
+#Visualize cell types
 DimPlot(object = zika_all_mthb_filter_SCT,
-        group.by = "seurat_clusters",
-        reduction = "pca",
-        label = TRUE)
+group.by = "seurat_clusters",
+reduction = "pca",
+label = TRUE)
 PCAPlot(object = zika_all_mthb_filter_SCT,
-        group.by = "seurat_clusters",
-        pt.size = 0.5,
-        label = TRUE)
-#tSNE的聚类结果最好
-TSNEPlot(object = zika_all_mthb_filter_SCT,
-         group.by = "seurat_clusters",
-         pt.size = 0.5,
-         label = TRUE)
-UMAPPlot(object = zika_all_mthb_filter_SCT,
-         group.by = "seurat_clusters",
-         pt.size = 0.5,
-         label = TRUE)
-#保存一下分群之后的细胞
-save(zika_all_mthb_filter_SCT, file = "zika_all_mthb_filter_SCT_cluster23.Rda")
-#细胞周期影响比较大，返回上一步去除细胞周期影响
+group.by = "seurat_clusters",
+pt.size = 0.5,
+label = TRUE)
 
-#############3.细胞注释###################
-#一般是load进来上一步骤的数据
+#tSNE clustering results are better
+TSNEPlot(object = zika_all_mthb_filter_SCT,
+group.by = "seurat_clusters",
+pt.size = 0.5,
+label = TRUE)
+UMAPPlot(object = zika_all_mthb_filter_SCT,
+group.by = "seurat_clusters",
+pt.size = 0.5,
+label = TRUE)
+
+Save clustered cells
+save(zika_all_mthb_filter_SCT, file = "zika_all_mthb_filter_SCT_cluster23.Rda")
+
+#Cell cycle has a significant impact, so remove the effect in the previous step
+############# 3. Cell Annotation ###################
+
+#Generally, load the data from the previous step
 load(file = "zika_all_mthb_filter_SCT_cluster23.Rda")
-#读取总结好的marker信息 
+
+#Read pre-annotated marker information
 cell_marker <- read.csv("mouse_brain_cell_atlas_paper.csv")
-#提取文件中需要的信息
+
+#Extract relevant information from the file
 cell_marker <- cell_marker[c(3, 5)]
 View(cell_marker)
 
-#如果有好几个标记基因，使用下面的代码分开
+# If there are multiple marker genes, separate them using the following code
 cell_marker <- cell_marker %>%
   separate_rows(Cell.Marker, sep = ", ") %>%
   na.omit() %>%
   distinct() %>%
   arrange(Cell.Type)
 
-#有的标志物前⾯有空格符号，因此我们要把这个空格符号去掉
+# Remove leading whitespace from some markers
 cell_marker$Cell.Marker <- str_trim(cell_marker$Cell.Marker, "left")
 
-#进行注释
+# Perform annotation
 p7 <- DimPlot(zika_all_mthb_filter_SCT,
-              reduction = "tsne", # pca, umap, tsne
+              reduction = "tsne",
               group.by = "seurat_clusters",
-              label = T)
+              label = TRUE)
 p8 <- DotPlot(zika_all_mthb_filter_SCT,
               features = unique(cell_marker$Cell.Marker)) +
   theme(axis.text = element_text(size = 8,
@@ -229,11 +238,11 @@ p8 <- DotPlot(zika_all_mthb_filter_SCT,
                                  hjust = 1))
 p7 + p8
 
-#看一下表达范围
+# Check expression range
 range(zika_all_mthb_filter_SCT@assays$integrated@scale.data)
 
-# 看一下具体基因的表达
-# 以B细胞为例子
+# Check specific gene expression
+# Using B cells as an example
 p9 <- FeaturePlot(zika_all_mthb_filter_SCT,
                   reduction = "tsne",
                   features = c("Ms4a1", "Cd19", "Pxk", "Cd74", "Cd79a"),
@@ -241,32 +250,30 @@ p9 <- FeaturePlot(zika_all_mthb_filter_SCT,
 p9
 p7 + p9
 
-
-
-#接下来使用singler试一试
+# Next, try using SingleR
 BiocManager::install('SingleR')
 BiocManager::install('celldex')
 BiocManager::install('BiocParallel')
 library(SingleR)
 library(celldex)
 library(BiocParallel)
-#下载注释文件
+
+# Download annotation file
 ref <- celldex::MouseRNAseqData()
 save(ref, file = "MouseRNAseqData.Rda")
 
-
-#画一下每个cluster的差异基因
-#load('zika_all_mthb_filter_SCT_cell_SingleR.Rda')
+# Plot differential genes for each cluster
+# load('zika_all_mthb_filter_SCT_cell_SingleR.Rda')
 Idents(zika_all_mthb_filter_SCT) <- 'cell_type1'
 Idents(zika_all_mthb_filter_SCT)
 
 logFCfilter=0.5
 adjPvalFilter=0.05
 zika_all_mthb_filter_SCT.markers <- FindAllMarkers(object = zika_all_mthb_filter_SCT,
-                                only.pos = TRUE, #TRUE表示只求高表达的基因
-                                min.pct = 0.25, #表达的最小百分比
-                                logfc.threshold = logFCfilter) # 这一步花了1-2h
-# 把marker文件保存下来
+                                only.pos = TRUE,
+                                min.pct = 0.25,
+                                logfc.threshold = logFCfilter)
+# Save the marker file
 save(zika_all_mthb_filter_SCT.markers, file = "zika_all_SCT.markers_0725.Rda")
 
 sig.markers = zika_all_mthb_filter_SCT.markers[(abs(as.numeric(as.vector(zika_all_mthb_filter_SCT.markers$avg_log2FC)))>logFCfilter & as.numeric(as.vector(zika_all_mthb_filter_SCT.markers$p_val_adj))<adjPvalFilter),]
@@ -277,10 +284,10 @@ top20 <- zika_all_mthb_filter_SCT.markers %>% group_by(cluster) %>% top_n(n = 20
 write.table (top20 ,file="PC20_top20.markers.xls",sep="\t",row.names=F,quote=F)
 
 
-#绘制marker在各个cluster的热图
+# Draw heatmap of markers in each cluster
 pdf(file="09.tsneHeatmap.pdf",width=32,height=8)
 DoHeatmap(object = zika_all_mthb_filter_SCT, features = top5$gene) + NoLegend()
-dev.off()  # 绘制速度较慢
+dev.off()  # Slow to generate
 
 check.marker <- c('Ninj1','Cd68', # 0 Macrophage
                   'Ctss','C1qa', # 1 Microglia_Ctss high
@@ -308,32 +315,31 @@ check.marker <- c('Ninj1','Cd68', # 0 Macrophage
                   'Cyp11a1','Hdc' # 23 Granulocyte_Cyp11a1
                   )
 
-# 使用check.marker看一下
+# Use check.marker to visualize
 DotPlot(zika_all_mthb_filter_SCT,
         features = unique(check.marker)) +
   theme(axis.text = element_text(size = 8,
                                  angle = 90,
                                  hjust = 1))
 
-#绘制marker的小提琴图
+# Draw violin plot of markers
 pdf(file="02.markerViolin.pdf",width=10,height=6)
 VlnPlot(object = zika_all_mthb_filter_SCT, features = c("Cd83", "Cxcl2"))
 dev.off()
 
-#绘制marker在各个cluster的散点图
+# Draw scatter plot of markers in each cluster
 pdf(file="02.markerScatter.pdf",width=10,height=6)
 FeaturePlot(object = zika_all_mthb_filter_SCT, features = c("Cd83", "Cxcl2"))
 dev.off()
 
-#绘制marker在各个cluster的气泡图
+# Draw bubble plot of markers in each cluster
 pdf(file="06.markerBubble.pdf",width=12,height=6)
-cluster0Marker=c("Cbr2", "Lyve1", "Selenop", "Folr2", "Ednrb", "F13a1", "Mrc1", "Igf1", "Slc40a1
-", "Cd163")
+cluster0Marker=c("Cbr2", "Lyve1", "Selenop", "Folr2", "Ednrb", "F13a1", "Mrc1", "Igf1", "Slc40a1", "Cd163")
 DotPlot(object = zika_all_mthb_filter_SCT, features = cluster0Marker)
 dev.off()
 
 load('20220720recluster.Rda')
-####写入细胞类型
+# Define cell types
 Cell_type <- c(# "0" = "Macrophage",
                # "1" = "Microglia_Ctss high",
                # "2" = "Monocyte_Lyz2", #
@@ -359,11 +365,9 @@ Cell_type <- c(# "0" = "Macrophage",
                # "22" = "Neutrophils",
                "23" = "Granulocyte_Cyp11a1") 
 
-#将定义各个亚型对应的细胞名称，然后写⼊到meta.data⽂件
+#The cell names corresponding to each subtype are defined and then written to the meta-.data file
 zika_all_mthb_filter_SCT[['cell_type']] <- unname(Cell_type[zika_all_mthb_filter_SCT@meta.data$seurat_clusters])
 
-# 重新定义细胞类型
-#将新矩阵cluster0，1，2，5，8分为Tcells。将cluster3分为Bcell，其他的为myeloid
 
 zika_all_mthb_filter_SCT@meta.data$cell_type1  <-  ifelse(zika_all_mthb_filter_SCT@meta.data$seurat_clusters %in% c(1,11,17),'Microglia',
                                  ifelse(zika_all_mthb_filter_SCT@meta.data$seurat_clusters %in% c(2,13),'Monocyte',
@@ -379,13 +383,12 @@ zika_all_mthb_filter_SCT@meta.data$cell_type1  <-  ifelse(zika_all_mthb_filter_S
                                                                                                               ifelse(zika_all_mthb_filter_SCT@meta.data$seurat_clusters %in% c(15),'Oligodendrocyte',
                                                                                                                      ifelse(zika_all_mthb_filter_SCT@meta.data$seurat_clusters %in% c(18),'Ependymal',
                                                                                                                             ifelse(zika_all_mthb_filter_SCT@meta.data$seurat_clusters %in% c(22),'Neutrophils','Granulocyte'))))))))))))))
-#看一下结果
+
 table(zika_all_mthb_filter_SCT@meta.data$cell_type1)
 zika_all_mthb_filter_SCT@meta.data$Group <- factor(zika_all_mthb_filter_SCT@meta.data$Group,
                                                       levels = c('MOCK','V_FS','V_59'))
 
-#接着可以重新画⼀个UMAP图带上细胞名称
-#UMAP
+
 pdf('totalumap.pdf',width = 8,height = 8)
 DimPlot(zika_all_mthb_filter_SCT,
         reduction = "umap",
@@ -404,7 +407,7 @@ DimPlot(zika_all_mthb_filter_SCT,
         pt.size = 0.3) +
   NoLegend()
 dev.off()
-#按照组别上色看看
+
 pdf('group_umap.pdf',width = 20,height = 8)
 DimPlot(zika_all_mthb_filter_SCT,
         reduction = "umap",
@@ -414,44 +417,8 @@ DimPlot(zika_all_mthb_filter_SCT,
         pt.size = 0.3) +
   NoLegend()
 dev.off()
-#保存一下注释好的数据
+# savedata
 save(zika_all_mthb_filter_SCT, file = "20220720recluster.Rda")
 
 
-#### marker基因可视化 -----
-# 散点图
-FeaturePlot(zika_all_mthb_filter_SCT, features = c("C1qa", "Gfap", "Meg3", "Lyz2"),
-            order = T)
-# 小提琴图
-VlnPlot(zika_all_mthb_filter_SCT, features = c("C1qa", "Gfap", "Meg3", "Lyz2"), ncol = 1)
 
-# 气泡图
-DotPlot(zika_all_mthb_filter_SCT, features = c("C1qa", "Gfap", "Meg3", "Lyz2"))
-
-# 山脊图
-RidgePlot(zika_all_mthb_filter_SCT, c("C1qa", "Gfap", "Meg3", "Lyz2"), ncol = 2)
-
-# 热图
-DoHeatmap(zika_all_mthb_filter_SCT, features = top10$gene)
-
-load('~/analysis/zika/data/step6_7_Macroxifen/M.data_cluster_PC30_4cluster_marker.Rda')
-# 气泡图 用来看巨噬细胞marker表达
-DotPlot(M.data, features = c("Cd68", "Clec4a2", "Cd14",
-                             'Aoah', 'Apoe', 'Arhgap15',
-                             'Bank1', 'CD40', 'Cd84'))
-FeaturePlot(M.data, features = c("Cd68", "Clec4a2", "Cd14"))
-# 山脊图
-RidgePlot(M.data, c("Cd68", "Clec4a2", "Cd14",
-                                      'Aoah', 'Apoe', 'Arhgap15',
-                                      'Bank1', 'CD40', 'Cd84'), group.by = 'cell_type',
-           ncol = 3)
-DoHeatmap(M.data, features = c("Cd68", "Clec4a2", "Cd14",
-                                                 'Dock2', 'Abca9', 'Aoah', 'Apoe', 'Arhgap15',
-                                                 'Bank1', 'CD40', 'Cd84', 'Cfh'))
-# 神经细胞marker表达
-# 山脊图 NeuN, Rph3a, B3gat1, Calb1, Calb2, Gap43, Pcdh20, Pcsk2, Actn2, Adamts5
-RidgePlot(M.data, c("Rbfox3", "Map2", "Meg3",
-                    'Rph3a', 'B3gat1', 
-                    'Calb2', 'Gap43', 
-                    'Snhg11', 'Miat','Ccnd2'), group.by = 'cell_type',
-          ncol = 3)
